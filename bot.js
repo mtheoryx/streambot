@@ -54,12 +54,6 @@ function onMessageHandler(target, context, msg, self) {
       `@${context.username} You rolled for initiative: ${roll}${spice}`
     );
   }
-  const commandMap = {
-    '!dice': roll20,
-    '!coin': flipCoin
-  };
-
-  commandMap[commandName]();
 }
 // Define onConnectHandler
 function onConnectedHandler(addr, port) {
