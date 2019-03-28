@@ -1,10 +1,15 @@
 const tmi = require('tmi.js');
-const token = require('./auth');
+// const token = require('./auth');
+require('dotenv').config();
+
+// Remove token ref, use real env token
+// Remove username string, use real env token
+// Remove human user, instead use the agent user
 
 const opts = {
   identity: {
-    username: 'roberttables',
-    password: `${token.OAUTH_TOKEN}`
+    username: `${process.env.USER}`,
+    password: `${process.env.TOKEN}`
   },
   channels: ['roberttables']
 };
@@ -50,7 +55,7 @@ function onMessageHandler(target, context, msg, self) {
     );
   }
   const commandMap = {
-    '!dice': dice,
+    '!dice': roll20,
     '!coin': flipCoin
   };
 
