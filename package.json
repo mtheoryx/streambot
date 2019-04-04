@@ -6,12 +6,15 @@
   "scripts": {
     "start": "node bot.js",
     "dev": "nodemon bot.js",
+    "start:particle": "node particle-web-led-bot.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "dotenv": "^7.0.0",
+    "particle-api-js": "^7.4.0",
     "tmi.js": "1.4.2"
   },
   "devDependencies": {

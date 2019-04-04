@@ -1,10 +1,15 @@
 const tmi = require('tmi.js');
-const token = require('./auth');
+// const token = require('./auth');
+require('dotenv').config();
+
+// Remove token ref, use real env token
+// Remove username string, use real env token
+// Remove human user, instead use the agent user
 
 const opts = {
   identity: {
-    username: 'roberttables',
-    password: `${token.OAUTH_TOKEN}`
+    username: `${process.env.USER}`,
+    password: `${process.env.TOKEN}`
   },
   channels: ['roberttables']
 };
@@ -15,6 +20,7 @@ const client = new tmi.client(opts);
 // Register the event handlers
 client.on('message', onMessageHandler);
 client.on('connected', onConnectedHandler);
+client.on('disconnected', onDisconnectedHandler);
 
 // Connect to The Twitches
 client.connect();
@@ -27,14 +33,14 @@ function onMessageHandler(target, context, msg, self) {
     return;
   }
   // Remove the whitespace (ex: !dice<space> !dice)
-  const commandName = msg.trim();
+  const commandName = msg.trim().split(' ');
 
   // console.log(JSON.stringify(context, 0, 4));
-  const roll = roll20();
+  const rollResult = roll(20);
   let spice = '';
   // Switch on a known command
-  if (commandName === '!dice') {
-    switch (roll) {
+  if (commandName[0] === '!dice') {
+    switch (rollResult) {
       case 20:
         spice = ` - NAT 20 robert68Hecc`;
         break;
@@ -46,31 +52,46 @@ function onMessageHandler(target, context, msg, self) {
     }
     client.say(
       target,
-      `@${context.username} You rolled for initiative: ${roll}${spice}`
+      `@${context.username} You rolled for initiative: ${rollResult}${spice}`
     );
+  } else if (commandName[0] === '!c') {
+    // this is an ability/perception check
+    // Example perception check: !c perception 6
+    // This is type: perception, dice sides 6, roll, and say command
+    const type = commandName[1] || 'intelligence';
+    const sides = commandName[2] || 4;
+    check(target, context, type, sides);
   }
-  const commandMap = {
-    '!dice': dice,
-    '!coin': flipCoin
-  };
-
-  commandMap[commandName]();
 }
 // Define onConnectHandler
 function onConnectedHandler(addr, port) {
+  client.say(`${opts.channels[0]}`, `Bot entering chat...`);
+}
+
+// TODO: Would be nice to have the bot leave a message
+// when killing the bot server
+// process.on('SIGINT', onDisconnectedHandler);
+
+// Define onDisconnectedHandler
+function onDisconnectedHandler(_) {
+  client.say('Bot leaving chat.');
+}
+
+function check(target, context, type, sides) {
   client.say(
-    `${opts.channels[0]}`,
-    `robert68Hecc Bot in the chat ready to roll! robert68Shipit`
+    target,
+    `${context.username} made a ${rollType(type)} check, got a: ${roll(sides)}!`
   );
 }
 
-// Callback for function
-function roll20() {
-  const sides = 20;
-  return Math.floor(Math.random() * sides) + 1;
+// Type of role
+function rollType(type = 'initiative') {
+  // initiative, strength, dexterity, constitution, intelligence, wisom, charisma
+  // Messages map or switch
+  return `heccin ${type} `;
 }
 
-// Flip Coin
-function flipCoin() {
-  return Math.floor(Math.random() * 2) + 1;
+// Number of sides to the dice
+function roll(sides = 20) {
+  return Math.floor(Math.random() * sides) + 1;
 }
